@@ -30,19 +30,13 @@ class Forward_Attention_sparse(nn.Module):
     def forward(self, x):
         B, N, C = x.shape
         assert (C == self.dim and N == self.patches)
-        #Q=self.bn( F.relu(self.qw(input=x)).unsqueeze(-1) ).squeeze(-1)
-        #V=self.bn(F.leaky_relu(self.vw(input=x), negative_slope=0.1).unsqueeze(-1) ).squeeze(-1)
         Q=self.bn( self.qw(input=x).unsqueeze(-1) ).squeeze(-1)
         K=self.bn(self.kw(input=x).unsqueeze(-1) ).squeeze(-1)
         Q = F.normalize(Q, p=2, dim=2)
         K = F.normalize(K, p=2, dim=2)
-        #Q = self.qw(input=x)
-        #V = self.vw(input=x)
 
         scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.dim)
-        #scores = torch.matmul(Q, V.transpose(-2, -1))
         scores = self.att_drop(scores)
-        #scores = self.softmax(scores)
         scores = self.sparsemax(scores)
         return scores
 
@@ -65,15 +59,10 @@ class Forward_Attention_soft(nn.Module):
     def forward(self, x):
         B, N, C = x.shape
         assert (C == self.dim and N == self.patches)
-        #Q=self.bn( F.relu(self.qw(input=x)).unsqueeze(-1) ).squeeze(-1)
-        #V=self.bn(F.leaky_relu(self.vw(input=x), negative_slope=0.1).unsqueeze(-1) ).squeeze(-1)
         Q=self.bn( self.qw(input=x).unsqueeze(-1) ).squeeze(-1)
         V=self.bn(self.vw(input=x).unsqueeze(-1) ).squeeze(-1)
-        #Q = self.qw(input=x)
-        #V = self.vw(input=x)
 
         scores = torch.matmul(Q, V.transpose(-2, -1)) / math.sqrt(self.dim)
-        #scores = torch.matmul(Q, V.transpose(-2, -1))
         scores = self.att_drop(scores)
         scores = self.softmax(scores)
         return scores
@@ -95,11 +84,8 @@ class Forward_Multihead_Attention_sparse(nn.Module):
         self.sparsemax = Sparsemax(dim=1)
         self.softmax= nn.Softmax(dim=1)
 
-        #self.q_proj = nn.Linear(key_size, key_size, bias=False)
-        #self.v_proj = nn.Linear(key_size, key_size, bias=False)
 
         self.dim_multihead_concate = int(num_heads * patches)
-        #self.out_project = nn.Linear(self.dim_multihead_concate, patches, bias=False)
 
         self.bn = nn.BatchNorm2d(self.num_heads)
 
@@ -110,13 +96,6 @@ class Forward_Multihead_Attention_sparse(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        #assert (C == self.dim and N == self.patches)
-        #Q=self.bn( F.relu(self.qw(input=x)).unsqueeze(-1) ).squeeze(-1)
-        #V=self.bn(F.leaky_relu(self.vw(input=x), negative_slope=0.1).unsqueeze(-1) ).squeeze(-1)
-        #Q=self.bn( self.qw(input=x).unsqueeze(-1) ).squeeze(-1)
-        #V=self.bn(self.vw(input=x).unsqueeze(-1) ).squeeze(-1)
-        #q = self.q_proj(self.qw(input=x))
-        #v = self.v_proj(self.vw(input=x))
         q = self.qw(input=x)
         k = self.kw(input=x)
         Q = self.bn(q.reshape(B, N, self.num_heads, self.qv_head_dim).transpose(1, 2))
@@ -131,7 +110,6 @@ class Forward_Multihead_Attention_sparse(nn.Module):
 
         scores = self.att_drop(scores)
         scores = self.sparsemax(scores)
-        #scores = self.softmax(scores)
         return scores
 
 
@@ -147,8 +125,6 @@ class FieldFormer_TAP(nn.Module):
         super(FieldFormer_TAP, self).__init__()
         e1, e2, e3=int(5), int(5), int(20)
         self.stride = 3
-        #self.alpha = torch.tensor(0.1, requires_grad=True)
-        #self.embbeding=TCL(input_shape=[e1, e1, e1], rank=[e2, e2, e2])
         self.depth = depth
         self.subtensor_size = e1
 
@@ -182,21 +158,17 @@ class FieldFormer_TAP(nn.Module):
         original_tensor = original_tensor.squeeze(0)
         oritensor_szie = original_tensor.shape
         out_shape = int((oritensor_szie[0] - subtensor_size[0]) / stride + 1)
-        # 定义每个小张量的大小
 
         num_patch = out_shape ** 3
-        # 初始化一个空的四维张量，用于存储结果
         result_tensor = torch.empty((num_patch,) + subtensor_size)
 
-        # 遍历原始张量的每个位置，提取 5x5x5 的子张量，并存储到结果张量中
+
         count = 0
         for i in range(0, oritensor_szie[0] - subtensor_size[0] + 1, stride):
             for j in range(0, oritensor_szie[1] - subtensor_size[1] + 1, stride):
                 for k in range(0, oritensor_szie[2] - subtensor_size[2] + 1, stride):
-                    # 切片获取 subtensor_size 的子张量
                     subtensor = original_tensor[i:i + subtensor_size[0], j:j + subtensor_size[1],
                                 k:k + subtensor_size[2]]
-                    # 存储到结果张量中
                     result_tensor[count] = subtensor
                     count += 1
         return result_tensor.unsqueeze(0)
@@ -205,9 +177,8 @@ class FieldFormer_TAP(nn.Module):
     def forward(self, patches):
         x1 = patches.cuda()
         x2 = x1.squeeze(0)
-        x2 = x2.contiguous().view(self.patches, -1)  # 特征展平
-        x2 = x2.unsqueeze(0)  # 拉回到特征图
-        #x2 = torch.randn_like(x2)
+        x2 = x2.contiguous().view(self.patches, -1) 
+        x2 = x2.unsqueeze(0) 
         x3, att_map = self.forward_features(x2)
 
 
@@ -215,15 +186,13 @@ class FieldFormer_TAP(nn.Module):
         x3 = x3.permute(0,3,1,4,2,5)
         x4 = x3.reshape(1,self.feature_dim,self.feature_dim,self.feature_dim)
 
-        #x4 = x3.view(1, self.feature_dim, self.feature_dim, self.feature_dim)
         x4 = self.drop(x4)
 
 
         core = x4.squeeze(0)
 
         x5 = self.decoder1(x4)
-        # for i in self.decoder1.parameters():
-        #     print(i)
+
         return torch.tanh(x5), att_map
 
 
@@ -286,21 +255,16 @@ class FieldFormer_MHTAP(nn.Module):
     def forward(self, patches):
         x1 = patches.cuda()
         x2 = x1.squeeze(0)
-        x2 = x2.contiguous().view(self.patches, -1)  # 特征展平
-        x2 = x2.unsqueeze(0)  # 拉回到特征图
+        x2 = x2.contiguous().view(self.patches, -1)  
+        x2 = x2.unsqueeze(0) 
 
         x3, att_map = self.forward_features(x2)
-        #x4 = x3.view(1,self.num_head1*self.feature_dim, self.num_head2*self.feature_dim, self.num_head3*self.feature_dim)
         x4 = x3.view(self.num_head1, self.num_head2, self.num_head3, self.N, self.N, self.N, self.N, self.N, self.N )
         x4 = x4.permute(0, 3, 6, 1, 4, 7, 2, 5, 8)
         x4 = x4.reshape(1, self.num_head1*self.N *self.N, self.num_head2*self.N *self.N, self.num_head3*self.N *self.N)
 
-        #x4 = x3.view(1,81, 72, 96)
-
 
         x4 = self.drop(x4)
-
-        #core = x4.squeeze(0).view(self.patches, self.num_heads*self.patches)
 
         x5 = self.decoder2(x4)
         return torch.tanh(x5), att_map
@@ -360,19 +324,6 @@ def total_variation(images): #torch.Size([1, 20, 20, 20])
 
 
 
-
-
-
-# def loss_fn_mse(outputs, observation_truth, observation_tensor, mask_tensor, add_TV_regu=False):
-#     mask_tensor = torch.FloatTensor(mask_tensor).cuda().unsqueeze(0)
-#     pred=(observation_tensor*outputs)*mask_tensor
-#     observation_truth=observation_truth*mask_tensor
-#     num_obser=torch.sum(observation_tensor*mask_tensor)
-#     if add_TV_regu:
-#         alpha = 1e-8
-#         return torch.sum((pred-observation_truth)**2)/num_obser + alpha*total_variation(outputs)
-#     else:
-#         return torch.sum((pred-observation_truth)**2)/num_obser
 
 
 def loss_fn_mse(outputs, observation_truth, observation_tensor,  add_TV_regu=False):
