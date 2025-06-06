@@ -180,19 +180,11 @@ class FieldFormer_TAP(nn.Module):
         x2 = x2.contiguous().view(self.patches, -1) 
         x2 = x2.unsqueeze(0) 
         x3, att_map = self.forward_features(x2)
-
-
         x3 = x3.view(self.x,self.x,self.x,self.x,self.x,self.x)
         x3 = x3.permute(0,3,1,4,2,5)
         x4 = x3.reshape(1,self.feature_dim,self.feature_dim,self.feature_dim)
-
         x4 = self.drop(x4)
-
-
-        core = x4.squeeze(0)
-
         x5 = self.decoder1(x4)
-
         return torch.tanh(x5), att_map
 
 
@@ -216,14 +208,12 @@ class FieldFormer_MHTAP(nn.Module):
         self.num_head2 = num_heads_tuple[1]
         self.num_head3 = num_heads_tuple[2]
         self.num_heads = self.num_head1*self.num_head2*self.num_head3
-
         self.attention_blocks = nn.ModuleList([Forward_Multihead_Attention_sparse(patches=self.patches, embeded_dim=self.dim, key_size = int(self.num_heads*self.dim2), num_heads= self.num_heads, attn_drop=dropout_rate ) for _ in range(self.depth)])
         self.feature_dim = int((20-e1)/self.stride+1)**2
         #self.encoder = TCL(input_shape=[20, 20, 20], rank=[self.feature_dim, self.feature_dim, self.feature_dim])
         e3 = int(20)
         #self.decoder1 = TCL(input_shape=[self.num_head1*self.feature_dim, self.num_head2*self.feature_dim, self.num_head3*self.feature_dim], rank=[e3, e3, e3])
         self.decoder2 = TCL(input_shape=[self.num_head1*self.N *self.N, self.num_head2*self.N *self.N, self.num_head3*self.N *self.N], rank=[e3, e3, e3])
-
         self.drop = nn.Dropout(p=dropout_rate)
 
     def forward_features(self,x):
@@ -257,15 +247,11 @@ class FieldFormer_MHTAP(nn.Module):
         x2 = x1.squeeze(0)
         x2 = x2.contiguous().view(self.patches, -1)  
         x2 = x2.unsqueeze(0) 
-
         x3, att_map = self.forward_features(x2)
         x4 = x3.view(self.num_head1, self.num_head2, self.num_head3, self.N, self.N, self.N, self.N, self.N, self.N )
         x4 = x4.permute(0, 3, 6, 1, 4, 7, 2, 5, 8)
         x4 = x4.reshape(1, self.num_head1*self.N *self.N, self.num_head2*self.N *self.N, self.num_head3*self.N *self.N)
-
-
         x4 = self.drop(x4)
-
         x5 = self.decoder2(x4)
         return torch.tanh(x5), att_map
 
@@ -284,14 +270,11 @@ class TNN(nn.Module):
 
         one = torch.tensor(1.0, requires_grad=False)
         self.input = one.cuda()
-
         self.f1 = 5
         self.f2 = 10
         self.linear = nn.Linear(1, self.f1*self.f1*self.f1, bias=None)
- 
         self.decoder1 = TCL(input_shape=[self.f1, self.f1, self.f1], rank=[self.f2, self.f2, self.f2])
         self.decoder2 = TCL(input_shape=[self.f2, self.f2, self.f2], rank=[20, 20, 20])
-
     def forward(self):
         initial_core = self.linear(self.input.unsqueeze(0))
         #initial_core = self.initial_core
@@ -308,11 +291,11 @@ class TNN(nn.Module):
 
 
 
-def total_variation(images): #torch.Size([1, 20, 20, 20])
+def total_variation(input):
     sum_axis = None
-    pixel_dif1 = images[0,1:, :, :] - images[0,:-1, :, :]
-    pixel_dif2 = images[0,:, 1:, :] - images[0,:, :-1, :]
-    pixel_dif3 = images[0,:, :, 1:] - images[0,:, :, :-1]
+    pixel_dif1 = input[0,1:, :, :] - input[0,:-1, :, :]
+    pixel_dif2 = input[0,:, 1:, :] - input[0,:, :-1, :]
+    pixel_dif3 = input[0,:, :, 1:] - input[0,:, :, :-1]
     tot_var = (
         torch.sum(torch.abs(pixel_dif1), axis=sum_axis) +
         torch.sum(torch.abs(pixel_dif2), axis=sum_axis) +

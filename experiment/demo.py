@@ -35,15 +35,6 @@ def get_rmse(x,x_hat):
 
 
 
-#hyperparameters
-nmod = 3
-
-
-num_epochs= 5000
-num_epochs_tnn= 8000
-learning_rate1=4e-3
-learning_rate2=4e-3
-learning_rate_tnn= 4e-3
 
 
 
@@ -93,10 +84,7 @@ def train_and_evaluate(model,  optimizer, loss_fn,  x_ob, x_true, observation_te
     X_input = model.cut_tensor_into_sliding_patches(x_ob_tensor, subtensor_size=(model.subtensor_size, model.subtensor_size, model.subtensor_size), stride=model.stride)
 
     for epoch in tqdm(range(num_epochs)):
-        output, attention_map = model(X_input)
-        attention_map_best = attention_map.detach().squeeze(0).cpu().numpy()
-        # if epoch == 1000:
-        #     U_list = model.get_U()
+        output, _ = model(X_input)
         loss = loss_fn(output, x_ob_tensor, ot, add_TV_regu=TV)
         train_loss_list.append(loss.item())
 
@@ -113,9 +101,10 @@ def train_and_evaluate(model,  optimizer, loss_fn,  x_ob, x_true, observation_te
             total_rmse = get_rmse(output_denorm, x_tensor_true)
             rmse_list.append(total_rmse.item())
             total_rmse = total_rmse.cpu().numpy()
-            if total_rmse < rmse_min or epoch % 500 == 0:
+            if total_rmse < rmse_min:
                 rmse_min = total_rmse
                 print("--------epoch:",epoch,"loss:",loss.item(),";min_rmse:", rmse_min)
+    return rmse_min
 
 
 
@@ -172,10 +161,9 @@ def train_and_evaluate_tnn(model,  optimizer, loss_fn,  x_ob, x_true, observatio
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 time_tick.append(elapsed_time)
-            recon_result_best = output_denorm.squeeze(0).cpu().numpy()
+            #recon_result_best = output_denorm.squeeze(0).cpu().numpy()
             print("--------epoch:",epoch,"loss:",loss.item(),";new minimum rmse:",total_rmse_min)
 
-    print("converge time:", time_tick[-6::])
     return total_rmse_min
 
 
@@ -184,6 +172,16 @@ def train_and_evaluate_tnn(model,  optimizer, loss_fn,  x_ob, x_true, observatio
 
 
 if __name__=="__main__":
+    #hyperparameters
+    nmod = 3
+
+
+    num_epochs= 5000
+    num_epochs_tnn= 5000
+    learning_rate1=4e-3
+    learning_rate2=4e-3
+    learning_rate_tnn= 4e-3
+
     cuda_is_available=torch.cuda.is_available()
     device=torch.cuda.current_device()
     print("torch.cuda.is_available:",cuda_is_available)
@@ -194,7 +192,7 @@ if __name__=="__main__":
     # # Define the model and optimizer
 
 
-    dropout_rate = 0.25
+    dropout_rate = 0.3
     model1 = net.FieldFormer_TAP(dropout_rate).cuda()
     model2 = net.FieldFormer_MHTAP(dropout_rate).cuda()
 
@@ -213,6 +211,6 @@ if __name__=="__main__":
 
 
     tap_rmse_min = train_and_evaluate(model1,  optimizer1, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
-    #mhtap_rmse_min = train_and_evaluate(model2, optimizer2, loss_fn, x_ob_norm, x_true, observation_tensor,  TV=False)
-    #tnn_rmse_min = train_and_evaluate_tnn(tnn_model, optimizer_tnn, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
-    #print("TAP RMSE:",tap_rmse_min," MHTAP RMSE:", mhtap_rmse_min, " TNN RMSE:", tnn_rmse_min)
+    mhtap_rmse_min = train_and_evaluate(model2, optimizer2, loss_fn, x_ob_norm, x_true, observation_tensor,  TV=False)
+    tnn_rmse_min = train_and_evaluate_tnn(tnn_model, optimizer_tnn, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
+    print("Oberservation rate:",sampling_rate, " TAP RMSE:",tap_rmse_min," MHTAP RMSE:", mhtap_rmse_min, " TNN RMSE:", tnn_rmse_min)
