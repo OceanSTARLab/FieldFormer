@@ -43,7 +43,7 @@ limited observations.</figurecaption>
 
 
 ## Requirements:
-The code was built with the `python3.10` and `torch=1.10.2`. The detailed package info can be found in `requirement.txt`.
+The code was built with the `python3.10`. The detailed package info can be found in `requirement.txt`.
 
 
 

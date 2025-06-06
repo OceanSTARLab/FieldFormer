@@ -1,0 +1,10 @@
+matplotlib==3.10.3
+numpy==2.2.6
+Pillow==11.2.1
+scipy==1.15.3
+seaborn==0.13.2
+sparsemax==0.1.9
+tensorly_torch==0.5.0
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+tqdm==4.67.1
