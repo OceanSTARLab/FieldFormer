@@ -1,6 +1,6 @@
 # FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior
 
-Official implementaion for the  paper entitled "[Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior]()", published in IEEE Transactions on Signal Processing. 
+Official implementaion for the  paper entitled "[Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior](http://arxiv.org/abs/2506.11629)", published in IEEE Transactions on Signal Processing. 
 
 
 ## Key Idea:
