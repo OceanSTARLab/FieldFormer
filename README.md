@@ -1,7 +1,6 @@
 # FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior
 
-Official implementaion for the  paper entitled "[Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior](http://arxiv.org/abs/2506.11629)", published in IEEE Transactions on Signal Processing. 
-
+Official implementaion for the  paper entitled  "**FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior**"[[Arxiv](https://arxiv.org/pdf/2505.09284)], published in IEEE Transactions on Signal Processing. 
 
 ## Key Idea:
 Build a complexity-adaptive Tucker model based on attention mechanism for reconstructing field with sparse observations.
