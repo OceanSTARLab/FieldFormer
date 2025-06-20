@@ -51,7 +51,7 @@ data_mean = np.array(mean['data_mean']).astype('float64')
 
 ####### loading data
 # choose sampling rate
-sampling_rate = 0.2
+sampling_rate = 0.1
 data_sample_dir = './ssf_data/sampling_rate_'+str(sampling_rate)+".mat"
 data_sample = scipy.io.loadmat(data_sample_dir)
 observation_tensor=np.array(data_sample['observation_tensor']).astype('float64')
@@ -210,7 +210,7 @@ if __name__=="__main__":
     loss_fn = net.loss_fn_mse
 
 
-    #tap_rmse_min = train_and_evaluate(model1,  optimizer1, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
+    tap_rmse_min = train_and_evaluate(model1,  optimizer1, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
     #mhtap_rmse_min = train_and_evaluate(model2, optimizer2, loss_fn, x_ob_norm, x_true, observation_tensor,  TV=False)
-    tnn_rmse_min = train_and_evaluate_tnn(tnn_model, optimizer_tnn, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
+    #tnn_rmse_min = train_and_evaluate_tnn(tnn_model, optimizer_tnn, loss_fn, x_ob_norm, x_true, observation_tensor, TV=False)
     #print("Oberservation rate:",sampling_rate, " TAP RMSE:",tap_rmse_min," MHTAP RMSE:", mhtap_rmse_min, " TNN RMSE:", tnn_rmse_min)
