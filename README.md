@@ -8,7 +8,7 @@
 </br>
 
 
-Official implementaion for the  paper entitled  "**FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior**"[[Arxiv](https://arxiv.org/abs/2506.11629)], published in IEEE Transactions on Signal Processing. 
+Official implementaion for the  paper entitled  "**FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior**"[[Arxiv](https://arxiv.org/abs/2506.11629)][[IEEE Xplore](https://ieeexplore.ieee.org/document/11053683)], published in IEEE Transactions on Signal Processing. 
 
 ## Key Idea:
 We bridge the attention mechanism with the Tucker tensor model and propose a complexity-adaptive Tucker model, driven by attention, for reconstructing fields from sparse observations in self-supervised fashion.
@@ -63,6 +63,16 @@ The code was built with the `python3.10`. The detailed package info can be found
 🌟 If you find this resource helpful, please consider to star this repository and cite our research:
 
 ```tex
+@ARTICLE{11053683,
+  author={Chen, Panqi and Li, Siyuan and Cheng, Lei and Fu, Xiao and Wu, Yik-Chung and Theodoridis, Sergios},
+  journal={IEEE Transactions on Signal Processing}, 
+  title={FieldFormer: Self-supervised Reconstruction of Physical Fields via Tensor Attention Prior}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-15},
+  keywords={3D physical field reconstruction;tensor attention prior;tensor completion},
+  doi={10.1109/TSP.2025.3580374}}
 
 ```
 In case of any questions, bugs, suggestions or improvements, please feel free to open an issue.
